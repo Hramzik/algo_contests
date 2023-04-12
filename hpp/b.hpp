@@ -52,10 +52,10 @@ int    node_dtor  (Node* node);
 
 int treap_push      (Treap* tree,     Node_info* info);
 int treap_push_root (Treap* tree,     Node_info* info);
-int node_push       (Node** node_ptr, Node_info* info);
+int node_push       (Node*  node,     Node_info* info);
 int create_node     (Node** node_ptr, Node_info* info);
 
-int    treap_print  (Treap* tree);
-int    node_print   (Node*  node);
+int treap_print  (Treap* tree);
+int node_print   (Node*  node);
 int get_value    (Node*  node);
-int get_priority (Node* node);
+

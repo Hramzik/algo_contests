@@ -99,7 +99,7 @@ int treap_push (Treap* tree, Node_info* info) {
     if (!tree->root || info->priority > tree->root->priority) return treap_push_root (tree, info);
 
 
-    return node_push (&tree->root, info);
+    return node_push (tree->root, info);
 }
 
 
@@ -134,38 +134,37 @@ int treap_push_root (Treap* tree, Node_info* info) {
 }
 
 
-int node_push (Node** node_ptr, Node_info* info) { // node_ptr - указатель на поддерево, после выполнения функции в нем есть value, возможны повороты
+int node_push (Node* node, Node_info* info) { // node_ptr - указатель на поддерево, после выполнения функции в нем есть value, возможны повороты
 
-    assert (node_ptr);
-    assert (cur_node);
+    assert (node);
     assert (info);
 
-    if (cur_node->value    == info->value)    return 1; // duplicate
-    if (cur_node->priority == info->priority) return 1; // duplicate
+    if (node->value    == info->value)    return 1; // duplicate
+    if (node->priority == info->priority) return 1; // duplicate
 
-    assert (info->value    > cur_node->value);
-    assert (info->priority < cur_node->priority);
-
-
-
-    if (!cur_node->right) return create_node (&cur_node->right, info);
+    assert (info->value    > node->value);
+    assert (info->priority < node->priority);
 
 
-    if (info->priority < cur_node->right->priority)  {
 
-        return node_push (&cur_node->right, info);
+    if (!node->right) return create_node (&node->right, info);
+
+
+    if (info->priority < node->right->priority)  {
+
+        return node_push (node->right, info);
     }
 
     // перевешиваем правое поддерево
 
-    Node* old_right = cur_node->right;
+    Node* old_right = node->right;
 
     assert (info->value    > old_right->value);
     assert (info->priority > old_right->priority);
 
 
-    create_node (&cur_node->right, info);
-    cur_node->right->left = old_right;
+    create_node (&node->right, info);
+    node->right->left = old_right;
 
 
     return 0;
@@ -181,7 +180,7 @@ int create_node (Node** node_ptr, Node_info* info) {
     cur_node = (Node*) calloc (1, NODE_SIZE);
 
 
-    cur_node->value     = info->value;
+    cur_node->value    = info->value;
     cur_node->priority = info->priority;
 
     cur_node->left  = nullptr;
@@ -236,14 +235,5 @@ int get_value (Node* node) {
 
 
     return node->value;
-}
-
-
-int get_priority (Node* node) {
-
-    if (!node) return 0;
-
-
-    return node->priority;
 }
 
