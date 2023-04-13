@@ -42,7 +42,7 @@ typedef struct Node {
     int key;
     int priority;
 
-    int subtree_sum;
+    unsigned long long subtree_sum;
 
     struct Node* left;
     struct Node* right;
@@ -88,7 +88,7 @@ int treap_push (Treap* tree, Node_info info);
 Node* create_node (Node_info info);
 
 int node_repair_subtree_sum (Node* node);
-int get_subtree_sum         (Node* node);
+unsigned long long get_subtree_sum         (Node* node);
 
 Node_pair treap_split          (Treap* tree, int key);
 Node_pair node_split           (Node*  node, int key);
@@ -99,8 +99,8 @@ Node* node_merge           (Node_pair pair);
 Node* node_merge_top_left  (Node_pair pair);
 Node* node_merge_top_right (Node_pair pair);
 
-int treap_sum_lr       (Treap* tree,     int l, int r);
-int node_sum_lr        (Node** node_ptr, int l, int r);
+unsigned long long treap_sum_lr       (Treap* tree,     int l, int r);
+unsigned long long node_sum_lr        (Node* node, int l, int r);
 
 
 int treap_print  (Treap* tree);

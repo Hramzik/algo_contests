@@ -26,7 +26,7 @@ int treap_solve (void) {
     size_t       n              = 0; assert (scanf ("%zd", &n));
     char         cmd [20]       = "";
     Command_code prev_operation = CC_INSERT;
-    int          prev_result    = 0;
+    unsigned long long          prev_result    = 0;
 
     int  arg1   = 0;
     int  arg2   = 0;
@@ -41,7 +41,7 @@ int treap_solve (void) {
 
             case CC_INSERT: {
 
-                if (prev_operation == CC_SUM) arg1 = (arg1 + prev_result) % 1000000000;
+                if (prev_operation == CC_SUM) arg1 = (int) (((unsigned long long) arg1 + prev_result) % 1000000000);
                 Node_info info = { arg1, rand () };
                 treap_push (tree, info);
                 prev_operation = CC_INSERT;
@@ -52,7 +52,7 @@ int treap_solve (void) {
 
                 scanf ("%d", &arg2);
                 prev_result = treap_sum_lr (tree, arg1, arg2);
-                printf ("%d\n", prev_result);
+                printf ("%llu\n", prev_result);
                 prev_operation = CC_SUM;
                 break;
             }
@@ -62,7 +62,7 @@ int treap_solve (void) {
         }
 
 
-        treap_print (tree);
+        //treap_print (tree);
 
 
         if (status) { printf ("ERROR\n"); return 0; }
@@ -144,7 +144,7 @@ int node_repair_subtree_sum (Node* node) {
 }
 
 
-int get_subtree_sum (Node* node) {
+unsigned long long get_subtree_sum (Node* node) {
 
     if (!node) return 0;
 
@@ -167,12 +167,12 @@ Node_pair node_split (Node* node, int key) {
     if (!node) { Node_pair ans = { nullptr, nullptr }; return ans; }
 
 
-    if (node->key == key) { Node_pair ans = { node->left, node->right }; return ans; }
+    // if (node->key == key) { Node_pair ans = { node->left, node->right }; return ans; }
                                      // типа этого ключа тут нет, разбиваем на поддеревья со СТРОГИМИ условиями на ключи
                                      // тогда добавление существующего ключа будет работать корректно
 
 
-    if (key > node->key) return node_split_big_key (node, key);
+    if (key >= node->key) return node_split_big_key (node, key);
 
 
     return node_split_small_key (node, key);
@@ -182,7 +182,7 @@ Node_pair node_split (Node* node, int key) {
 Node_pair node_split_big_key (Node* node, int key) {
 
     assert (node);
-    assert (key > node->key);
+    assert (key >= node->key);
 
 
     Node* new_left_root  = node; // справа еще подвесим другую хню
@@ -287,6 +287,9 @@ int treap_push (Treap* tree, Node_info info) {
     assert (tree);
 
 
+    if (treap_exists (tree, info.key)) return 0; // no duplicates!
+
+
     Node* new_node = create_node (info);
 
 
@@ -339,7 +342,7 @@ int node_print (Node* node) {
     assert (node);
 
 
-    printf ("%d %d val = %d, pr = %d, sum = %d\n", get_value (node->left), get_value (node->right), node->key, node->priority, node->subtree_sum);
+    printf ("%d %d val = %d, pr = %d, sum = %llu\n", get_value (node->left), get_value (node->right), node->key, node->priority, node->subtree_sum);
     // printf ("%d %d\n", get_value (node->left), get_value (node->right)); // finish describing myself
 
 
@@ -369,20 +372,12 @@ int get_value (Node* node) {
 }
 
 
-int treap_sum_lr (Treap* tree, int l, int r) {
+unsigned long long treap_sum_lr (Treap* tree, int l, int r) {
 
     assert (tree);
 
 
-    bool deleted_left_border  = treap_exists (tree, l - 1);
-    bool deleted_right_border = treap_exists (tree, r + 1);
-
-
-    int result = node_sum_lr (&tree->root, l, r);
-
-
-    if (deleted_left_border)  { Node_info info = { l - 1, rand () }; treap_push (tree, info); }
-    if (deleted_right_border) { Node_info info = { r + 1, rand () }; treap_push (tree, info); }
+    unsigned long long result = node_sum_lr (tree->root, l, r);
 
 
     return result;
@@ -393,28 +388,24 @@ int treap_sum_lr (Treap* tree, int l, int r) {
 #define cur_node (*node_ptr)
 //--------------------------------------------------
 
-int node_sum_lr (Node** node_ptr, int l, int r) {
+unsigned long long node_sum_lr (Node* node, int l, int r) {
 
-    assert (node_ptr);
-
-
-    if (!cur_node) return 0;
+    if (!node) return 0;
 
 
-    
-    Node_pair subtrees_split_1 = node_split (cur_node, l - 1); // may be overflow, but who cares
+    Node_pair subtrees_split_1 = node_split (node, l - 1); // may be overflow, but who cares
     // Node*     remainder1       = subtrees_split_1.left;
 
 
-    Node_pair subtrees_split_2 = node_split (subtrees_split_1.right, r + 1); // may be overflow, but who cares
+    Node_pair subtrees_split_2 = node_split (subtrees_split_1.right, r); // may be overflow, but who cares
     // Node*     remainder2       = subtrees_split_1.right;
 
 
-    int ans = get_subtree_sum (subtrees_split_2.left);
+    unsigned long long ans = get_subtree_sum (subtrees_split_2.left);
 
 
-    subtrees_split_1.right = node_merge (subtrees_split_2); // restored right
-    cur_node               = node_merge (subtrees_split_1); // restored node
+    subtrees_split_1.right =   node_merge (subtrees_split_2); // restored right
+    *node                   = *node_merge (subtrees_split_1); // restored node
 
 
     return ans;
