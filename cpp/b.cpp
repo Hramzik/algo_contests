@@ -26,7 +26,9 @@ int treap_solve (void) {
 
     for (size_t i = 0; i < n; i++) {
 
-        scanf ("\n%d %d", &info.value, &info.priority);
+        scanf ("%d %d", &info.value, &info.priority);
+        info.value = (int) i + 1;
+        info.priority *= -1; // строим на минимуме по приоритетам
 
         status = treap_push (tree, &info);
         // treap_print (tree);
@@ -196,32 +198,28 @@ int treap_print (Treap* tree) {
     assert (tree);
 
 
-    printf ("0 ");
-
-
-    return node_print (tree->root);
+    return node_print (tree->root, 0);
 }
 
 
-int node_print (Node* node) {
+int node_print (Node* node, int parent) {
 
     assert (node);
 
 
-    // printf ("%zd %zd val = %zd, pr = %zd\n", get_value (node->left), get_value (node->right), node->value, node->priority);
-    printf ("%d %d\n", get_value (node->left), get_value (node->right)); // finish describing myself
-
-
     if (node->left) {
 
-        printf ("%d ", node->value); // start describing left son
-        node_print (node->left);
+        node_print (node->left, node->value);
     }
+
+
+    //printf ("%d %d %d val = %d, pr = %d\n", parent, get_value (node->left), get_value (node->right), node->value, node->priority);
+    printf ("%d %d %d\n", parent, get_value (node->left), get_value (node->right)); // finish describing myself
+
 
     if (node->right) {
 
-        printf ("%d ", node->value); // start describing left son
-        node_print (node->right);
+        node_print (node->right, node->value);
     }
 
 

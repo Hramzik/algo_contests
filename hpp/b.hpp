@@ -56,6 +56,6 @@ int node_push       (Node*  node,     Node_info* info);
 int create_node     (Node** node_ptr, Node_info* info);
 
 int treap_print  (Treap* tree);
-int node_print   (Node*  node);
+int node_print   (Node*  node, int parent);
 int get_value    (Node*  node);
 
