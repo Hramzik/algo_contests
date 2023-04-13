@@ -31,8 +31,8 @@ int treap_solve (void) {
         info.priority *= -1; // строим на минимуме по приоритетам
 
         status = treap_push (tree, &info);
-        // treap_print (tree);
-        // printf ("\n\n\n");
+        //treap_print (tree);
+        //printf ("\n\n\n");
 
 
         if (status) { printf ("NO\n"); return 0; }
@@ -55,7 +55,8 @@ Treap* treap_ctor (void) {
     Treap* tree = (Treap*) calloc (1, TREAP_SIZE);
 
 
-    tree->root = nullptr;
+    tree->root       = nullptr;
+    tree->most_right = nullptr;
 
 
     return tree;
@@ -98,10 +99,7 @@ int treap_push (Treap* tree, Node_info* info) {
     assert (tree);
 
 
-    if (!tree->root || info->priority > tree->root->priority) return treap_push_root (tree, info);
-
-
-    return node_push (tree->root, info);
+    return node_push (tree, tree->most_right, info);
 }
 
 
@@ -118,11 +116,13 @@ int treap_push_root (Treap* tree, Node_info* info) {
     // assert (!tree->root || info->value    != tree->root->value);    // совпадать может только с пустым
 
 
-
     Node* old_root = tree->root;
 
 
-    create_node (&tree->root, info);
+    create_node (&tree->root, info, nullptr);
+
+
+    tree->most_right = tree->root;
 
 
     if (!old_root) return 0;
@@ -132,48 +132,54 @@ int treap_push_root (Treap* tree, Node_info* info) {
     else                               tree->root->right = old_root; // подвесим вправо
 
 
+    old_root->parent = tree->root;
+
+
     return 0;
 }
 
 
-int node_push (Node* node, Node_info* info) { // node_ptr - указатель на поддерево, после выполнения функции в нем есть value, возможны повороты
+int node_push (Treap* tree, Node* node, Node_info* info) { // node_ptr - указатель на поддерево, после выполнения функции в нем есть value, возможны повороты
 
-    assert (node);
+    if (!node) return treap_push_root (tree, info);
+
+
     assert (info);
 
     if (node->value    == info->value)    return 1; // duplicate
     if (node->priority == info->priority) return 1; // duplicate
 
-    assert (info->value    > node->value);
-    assert (info->priority < node->priority);
+    assert (info->value > node->value);
 
 
 
-    if (!node->right) return create_node (&node->right, info);
+    //printf ("current pr = %d my pr = %d\n", node->priority, info->priority);
+    if (node->priority < info->priority) return node_push (tree, node->parent, info);
 
-
-    if (info->priority < node->right->priority)  {
-
-        return node_push (node->right, info);
-    }
-
-    // перевешиваем правое поддерево
 
     Node* old_right = node->right;
 
-    assert (info->value    > old_right->value);
-    assert (info->priority > old_right->priority);
+
+    create_node (&node->right, info, node);
 
 
-    create_node (&node->right, info);
+    tree->most_right = node->right;
+
+
+    // перевешиваем правое поддерево
+
+
     node->right->left = old_right;
+
+
+    if (old_right) old_right->parent = node->right;
 
 
     return 0;
 }
 
 
-int create_node (Node** node_ptr, Node_info* info) {
+int create_node (Node** node_ptr, Node_info* info, Node* parent) {
 
     assert (node_ptr);
     assert (info);
@@ -185,8 +191,9 @@ int create_node (Node** node_ptr, Node_info* info) {
     cur_node->value    = info->value;
     cur_node->priority = info->priority;
 
-    cur_node->left  = nullptr;
-    cur_node->right = nullptr;
+    cur_node->left   = nullptr;
+    cur_node->right  = nullptr;
+    cur_node->parent = parent;
 
 
     return 0;
@@ -197,29 +204,29 @@ int treap_print (Treap* tree) {
 
     assert (tree);
 
-
-    return node_print (tree->root, 0);
+    //printf ("max right = %d\n", tree->most_right->value);
+    return node_print (tree->root);
 }
 
 
-int node_print (Node* node, int parent) {
+int node_print (Node* node) {
 
     assert (node);
 
 
     if (node->left) {
 
-        node_print (node->left, node->value);
+        node_print (node->left);
     }
 
 
-    //printf ("%d %d %d val = %d, pr = %d\n", parent, get_value (node->left), get_value (node->right), node->value, node->priority);
-    printf ("%d %d %d\n", parent, get_value (node->left), get_value (node->right)); // finish describing myself
+    // printf ("%d %d %d val = %d, pr = %d\n", get_value (node->parent), get_value (node->left), get_value (node->right), node->value, node->priority);
+    printf ("%d %d %d\n", get_value (node->parent), get_value (node->left), get_value (node->right)); // finish describing myself
 
 
     if (node->right) {
 
-        node_print (node->right, node->value);
+        node_print (node->right);
     }
 
 

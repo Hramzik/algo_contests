@@ -31,6 +31,7 @@ typedef struct Node {
 
     struct Node* left;
     struct Node* right;
+    struct Node* parent;
 
 } Node; const size_t NODE_SIZE = sizeof (Node);
 
@@ -38,6 +39,7 @@ typedef struct Node {
 typedef struct Treap { // предполагается, что в дереве не хранятся нулевые ключи
 
     Node* root;
+    Node* most_right;
 
 } Treap; const size_t TREAP_SIZE = sizeof (Treap);
 
@@ -50,12 +52,12 @@ Treap* treap_ctor (void);
 int    treap_dtor (Treap* tree);
 int    node_dtor  (Node* node);
 
-int treap_push      (Treap* tree,     Node_info* info);
-int treap_push_root (Treap* tree,     Node_info* info);
-int node_push       (Node*  node,     Node_info* info);
-int create_node     (Node** node_ptr, Node_info* info);
+int treap_push      (Treap* tree,              Node_info* info);
+int treap_push_root (Treap* tree,              Node_info* info);
+int node_push       (Treap* tree, Node*  node, Node_info* info);
+int create_node     (Node** node_ptr,          Node_info* info, Node* parent);
 
 int treap_print  (Treap* tree);
-int node_print   (Node*  node, int parent);
+int node_print   (Node*  node);
 int get_value    (Node*  node);
 
