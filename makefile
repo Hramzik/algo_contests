@@ -21,5 +21,5 @@ all: main
 
 
 main:
-	$(call compile, $(cppfolder)/q.cpp,   $(default_path))
+	$(call compile, $(cppfolder)/f.cpp,   $(default_path))
 
