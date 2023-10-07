@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <limits.h>
 
 //--------------------------------------------------
 
@@ -10,17 +11,16 @@
 
 //--------------------------------------------------
 
-static int binary_search_le (std::vector <int> vector, int start, int end, int value);
+static int binary_search_le (const std::vector <int>& vector, int start, int end, int value);
 
 //--------------------------------------------------
 
 
 int main (void) {
 
-    Solution solution;
-
     int n = 0;
     std::cin >> n;
+    Solution solution (n);
 
     for (int i = 0; i < n; ++i) {
 
@@ -41,21 +41,20 @@ int main (void) {
 
 //--------------------------------------------------
 
-Solution::Solution (void):
+Solution::Solution (int new_n):
         array (),
-        n (0),
+        n (new_n),
         answer (),
         answer_len (0),
-        dp (),
-        pos (),
-        prev () {}
+        dp (n, INT_MIN),
+        pos (n, -1),
+        prev (n, -1) {}
 
 //--------------------------------------------------
 
 void Solution::add_element (int element) {
 
     array.push_back (element);
-    n = (int) array.size ();
 }
 
 
@@ -64,21 +63,7 @@ void Solution::pre_solve (void) {
     //--------------------------------------------------
     // init dp
 
-    dp.push_back (INT_MAX);
-
-    for (int i = 0; i < n - 1; ++i) {
-
-        dp.push_back (INT_MIN);
-    }
-
-    //--------------------------------------------------
-    // init pos and prev
-
-    for (int i = 0; i < n; ++i) {
-
-        prev.push_back (-1);
-        pos.push_back  (-1);
-    }
+    dp [0] = INT_MAX;
 }
 
 
@@ -134,17 +119,21 @@ int Solution::search_le_in_dp (int value) {
     return binary_search_le (dp, 0, n - 1, value);
 }
 
-static int binary_search_le (std::vector <int> vector, int start, int end, int value) {
+static int binary_search_le (const std::vector <int>& vector, int start, int end, int value) {
 
     if (end - start < 0) { assert (0); return 0; }
 
 
-    if (end - start == 0) return start;
+
+    while (end - start > 0) {
+
+        int center = (start + end) / 2;
+
+        if (vector [center] <= value) end   = center;
+        else                          start = center + 1;
+    }
 
 
-    int center = (start + end) / 2;
-
-    if (vector [center] <= value) return binary_search_le (vector, start, center, value);
-    return binary_search_le (vector, center + 1, end, value);
+    return start;
 }
 

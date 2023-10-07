@@ -34,7 +34,7 @@ class Solution {
 
     //--------------------------------------------------
 
-    Solution (void);
+    Solution (int new_n);
 
     void add_element (int element);
     void pre_solve (void);
