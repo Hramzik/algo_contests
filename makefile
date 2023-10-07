@@ -4,7 +4,8 @@ cc = gcc
 
 #--------------------------------------------------
 
-TASK_FOLDER = src/a
+TASK_FOLDER   = src/a
+UNITED_FOLDER = united
 
 exefolder = exe
 
@@ -27,5 +28,10 @@ all: task
 task:
 	$(sc) $(cc) \
 	$(TASK_FOLDER)/a.cpp \
+	-o $(default_path) $(flags) -lstdc++
+
+uni:
+	$(sc) $(cc) \
+	$(UNITED_FOLDER)/united.cpp \
 	-o $(default_path) $(flags) -lstdc++
 

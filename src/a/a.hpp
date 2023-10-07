@@ -7,22 +7,20 @@ class Matrix2x2 {
 
   public:
 
-    int x11_;
-    int x12_;
-    int x21_;
-    int x22_;
+    long long x11_;
+    long long x12_;
+    long long x21_;
+    long long x22_;
 
     static const Matrix2x2 E;
 
     //--------------------------------------------------
 
-    Matrix2x2 (int x11, int x12, int x21, int x22);
+    Matrix2x2 (long long x11, long long x12, long long x21, long long x22);
+    void operator*= (Matrix2x2& rhs);
 
-    Matrix2x2 pow (int n);
+    void pow (long long n);
 };
-
-
-Matrix2x2 operator* (Matrix2x2 matrix1, Matrix2x2 matrix2);
 
 
 //--------------------------------------------------
