@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cassert>
 #include <limits.h>
+#include <iomanip>
 
 //--------------------------------------------------
 
@@ -14,9 +15,8 @@
 
 int main (void) {
 
-    int max_power = 0;
-    std::cin >> max_power;
-    Solution solution (max_power);
+    Solution solution;
+    solution.read_data ();
 
 
 
@@ -32,96 +32,206 @@ int main (void) {
 
 //--------------------------------------------------
 
-Solution::Solution (int max_power):
-        max_power_ (max_power),
-        answer_ (-1),
-        dp ((max_power + 1) * (max_power + 1), -1) {}
+Int_Pair::Int_Pair (int x, int y):
+        x_ (x),
+        y_ (y) {}
+
+
+Solution::Solution ():
+        string1 (),
+        string2 (),
+        dp (),
+        dp_last_indexes () {}
 
 //--------------------------------------------------
 
+void Solution::read_data (void) {
+
+    std::cin >> string1 >> string2;
+}
+
+
 void Solution::pre_solve (void) {
 
-    for (int i = 1; i <= max_power_; ++i) {
+    for (int i = 0; i < ((int) string1.size () + 1) * ((int) string2.size () + 1); ++i) {
 
-        set_dp (i, i, 1); // count is 1 when total power == minimal power
+        dp.push_back (-1);
+        dp_last_indexes.push_back ( { -1, -1 } );
+    }
+
+    //--------------------------------------------------
+
+    for (int i = 0; i < (int) string1.size () + 1; ++i) {
+
+        set_dp (i, 0, 0);
+    }
+
+    for (int i = 0; i < (int) string2.size () + 1; ++i) {
+
+        set_dp (0, i, 0);
     }
 }
 
 
 void Solution::solve (void) {
 
-    answer_ = 0;
-
-    for (int i = 1; i <= max_power_; ++i) {
-
-        answer_ += recount_dp (max_power_, i);
-    }
+    answer_ = count_dp ((int) string1.size (), (int) string2.size ());
 }
 
 
-int Solution::recount_dp (int power, int min_number_power) {
+int Solution::count_dp (int prefix1_len, int prefix2_len) {
 
-    int index = power * (max_power_ + 1) + min_number_power;
+    int index = prefix1_len * ((int) string2.size () + 1) + prefix2_len;
 
 
-    // уже посчитано
     if (dp [index] != -1) return dp [index];
 
 
-    // ща пощитаем..
-    dp [index] = 0;
+    if (string1 [prefix1_len - 1] == string2 [prefix2_len - 1]) {
 
-    // перебираем возможные суффиксы
-    int suffix_power = power - min_number_power;
-    if (suffix_power < 1) { dp [index] = 0; return 0; }
+        dp [index] = count_dp (prefix1_len - 1, prefix2_len - 1) + 1;
 
-    for (int min_suffix_power = 2 * min_number_power; min_suffix_power <= suffix_power;
-                                                      ++min_suffix_power) {
+        set_dp_last_indexes (prefix1_len, prefix2_len,
+                { prefix1_len - 1, prefix2_len - 1});
 
-        dp [index] += recount_dp (suffix_power, min_suffix_power);
+        return dp [index];
     }
 
 
-    if (dp [index] == -1) dp [index] = 0;
+    // разные символы
+    int result = count_dp (prefix1_len - 1, prefix2_len);
+    set_dp_last_indexes (prefix1_len, prefix2_len,
+                { prefix1_len - 1, prefix2_len});
+
+    int alternative = count_dp (prefix1_len, prefix2_len - 1);
+
+    if (result < alternative) {
+
+        result = alternative;
+        set_dp_last_indexes (prefix1_len, prefix2_len,
+                { prefix1_len, prefix2_len - 1});
+    }
+
+
+    dp [index] = result;
 
 
     return dp [index];
 }
 
 
-int Solution::get_dp (int power, int min_number_power) {
+int Solution::get_dp (int prefix1_len, int prefix2_len) {
 
-    int index = power * (max_power_ + 1) + min_number_power;
+    int index = prefix1_len * ((int) string2.size () + 1) + prefix2_len;
 
 
     return dp [index];
 }
 
 
-void Solution::set_dp (int power, int min_number_power, int value) {
+void Solution::set_dp (int prefix1_len, int prefix2_len, int value) {
 
-    int index = power * (max_power_ + 1) + min_number_power;
+    int index = prefix1_len * ((int) string2.size () + 1) + prefix2_len;
+
 
     dp [index] = value;
 }
 
 
+Int_Pair Solution::get_dp_last_indexes (int prefix1_len, int prefix2_len) {
+
+    int index = prefix1_len * ((int) string2.size () + 1) + prefix2_len;
+
+
+    return dp_last_indexes [index];
+}
+
+
+void Solution::set_dp_last_indexes (int prefix1_len, int prefix2_len, Int_Pair value) {
+
+    int index = prefix1_len * ((int) string2.size () + 1) + prefix2_len;
+
+
+    dp_last_indexes [index] = value;
+}
+
+
 void Solution::print_result (void) {
 
-    std::cout << answer_;
+    std::cout << answer_ << "\n";
+
+    print_lcs1 ((int) string1.size (), (int) string2.size ());
+    std::cout << "\n";
+    print_lcs2 ((int) string1.size (), (int) string2.size ());
+}
+
+
+void Solution::print_lcs1 (int prefix1, int prefix2) {
+
+    if (!prefix1 || !prefix2) return;
+
+
+    if (get_dp_last_indexes (prefix1, prefix2) == Int_Pair (prefix1 - 1, prefix2 - 1)) {
+
+        print_lcs1 (prefix1 - 1, prefix2 - 1);
+        std::cout << prefix1 << " ";
+        return;
+    }
+
+    if (get_dp_last_indexes (prefix1, prefix2) == Int_Pair (prefix1 - 1, prefix2)) {
+
+        print_lcs1 (prefix1 - 1, prefix2);
+        return;
+    }
+
+
+    print_lcs1 (prefix1, prefix2 - 1);
+}
+
+
+void Solution::print_lcs2 (int prefix1, int prefix2) {
+
+    if (!prefix1 || !prefix2) return;
+
+
+    if (get_dp_last_indexes (prefix1, prefix2) == Int_Pair (prefix1 - 1, prefix2 - 1)) {
+
+        print_lcs2 (prefix1 - 1, prefix2 - 1);
+        std::cout << prefix2 << " ";
+        return;
+    }
+
+    if (get_dp_last_indexes (prefix1, prefix2) == Int_Pair (prefix1 - 1, prefix2)) {
+
+        print_lcs2 (prefix1 - 1, prefix2);
+        return;
+    }
+
+
+    print_lcs2 (prefix1, prefix2 - 1);
 }
 
 
 void Solution::print_dp (void) {
 
-    for (int power = 1; power <= max_power_; ++power) {
+    for (int i = 0; i < (int) string1.size () + 1; ++i) {
 
-        for (int min_number_power = 1; min_number_power <= max_power_;
-                                       ++min_number_power) {
+        for (int j = 0; j < (int) string2.size () + 1; ++j) {
 
-            std::cout << get_dp (power, min_number_power) << " ";
+            std::cout << std::setw (2) << get_dp (i, j) << " ";
         }
 
         std::cout << "\n";
     }
 }
+
+
+bool operator== (Int_Pair pair1, Int_Pair pair2) {
+
+    if (pair1.x_ != pair2.x_) return false;
+    if (pair1.y_ != pair2.y_) return false;
+
+
+    return true;
+}
+
