@@ -32,57 +32,72 @@ int main (void) {
 
 //--------------------------------------------------
 
-Solution::Solution (int max_power):
-        max_power_ (max_power),
-        answer_ (-1),
-        dp ((max_power + 1) * (max_power + 1), -1) {}
+Solution::Solution (int ports_count, int lines_count):
+        ports_count_ (ports_count),
+        ports_       (),
+        lines_count_ (lines_count),
+        lines_       (),
+        answer_      () {}
 
 //--------------------------------------------------
 
 void Solution::pre_solve (void) {
 
-    for (int i = 1; i <= max_power_; ++i) {
-
-        set_dp (i, i, 1); // count is 1 when total power == minimal power
-    }
+    
 }
 
 
 void Solution::solve (void) {
 
-    answer_ = 0;
-
-    for (int i = 1; i <= max_power_; ++i) {
-
-        answer_ += recount_dp (max_power_, i);
-    }
+    
 }
 
 
+
+
+void Solution::print_result (void) {
+
+    for (int i = 0; i < answer_.size (); ++i) {
+
+        std::cout << answer_ [i] << "\n";
+    }
+}
+
+/*
+void Solution::print_dp (void) {
+
+    for (int power = 1; power <= max_power_; ++power) {
+
+        for (int min_number_power = 1; min_number_power <= max_power_;
+                                       ++min_number_power) {
+
+            std::cout << get_dp (power, min_number_power) << " ";
+        }
+
+        std::cout << "\n";
+    }
+}
+*/
+
+
+void Solution::add_port (long long port) {
+
+    ports_.push_back (port);
+}
+
+
+void Solution::add_line (long long line) {
+
+    lines_.push_back (line);
+}
+
+/*
 int Solution::recount_dp (int power, int min_number_power) {
 
     int index = power * (max_power_ + 1) + min_number_power;
 
 
-    // уже посчитано
-    if (dp [index] != -1) return dp [index];
-
-
-    // ща пощитаем..
-    dp [index] = 0;
-
-    // перебираем возможные суффиксы
-    int suffix_power = power - min_number_power;
-    if (suffix_power < 1) { dp [index] = 0; return 0; }
-
-    for (int min_suffix_power = 2 * min_number_power; min_suffix_power <= suffix_power;
-                                                      ++min_suffix_power) {
-
-        dp [index] += recount_dp (suffix_power, min_suffix_power);
-    }
-
-
-    if (dp [index] == -1) dp [index] = 0;
+    
 
 
     return dp [index];
@@ -103,25 +118,4 @@ void Solution::set_dp (int power, int min_number_power, int value) {
     int index = power * (max_power_ + 1) + min_number_power;
 
     dp [index] = value;
-}
-
-
-void Solution::print_result (void) {
-
-    std::cout << answer_;
-}
-
-
-void Solution::print_dp (void) {
-
-    for (int power = 1; power <= max_power_; ++power) {
-
-        for (int min_number_power = 1; min_number_power <= max_power_;
-                                       ++min_number_power) {
-
-            std::cout << get_dp (power, min_number_power) << " ";
-        }
-
-        std::cout << "\n";
-    }
-}
+}*/

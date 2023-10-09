@@ -9,10 +9,13 @@
 
 class Solution {
 
-    int max_power_;
-    long long answer_;
+    int ports_count_;
+    std::vector <long long> ports_;
 
-    std::vector <int> dp;
+    int lines_count_;
+    std::vector <long long> lines_;
+
+    std::vector <int> answer_;
 
     //--------------------------------------------------
 
@@ -22,7 +25,10 @@ class Solution {
 
   public:
 
-    Solution (int power);
+    Solution (int ports_count, int lines_count);
+
+    void add_port (long long port);
+    void add_line (long long line);
 
     void pre_solve (void);
     void solve (void);
