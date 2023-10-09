@@ -6,28 +6,48 @@
 
 //--------------------------------------------------
 
+typedef unsigned long long Profile;
+typedef unsigned long long ULL;
+typedef long long LL;
+
+//--------------------------------------------------
+
 
 class Solution {
 
-    int max_power_;
-    long long answer_;
+    int width_;
+    int height_;
 
-    std::vector <int> dp;
+    ULL profiles_count_;
+    std::vector <bool> transitions_;
+    std::vector <LL>   dp_;
+
+    LL answer_;
+
+    void fill_transitions (void);
+    void count_answer     (void);
+
+    bool  is_transition (Profile from, Profile to);
+    bool get_transition (Profile from, Profile to);
+    void set_transition (Profile from, Profile to, bool value);
+
+    LL count_dp (int x, Profile profile);
+    LL   get_dp (int x, Profile profile);
+    void set_dp (int x, Profile profile, LL value);
 
     //--------------------------------------------------
 
-    int  recount_dp (int power, int min_number_power);
-    int  get_dp     (int power, int min_number_power);
-    void set_dp     (int power, int min_number_power, int value);
-
   public:
 
-    Solution (int power);
+    Solution (int width, int height);
+
 
     void pre_solve (void);
     void solve (void);
     void print_result (void);
-    void print_dp (void);
+
+    void print_transitions (void);
+    void print_dp          (void);
 
 };
 

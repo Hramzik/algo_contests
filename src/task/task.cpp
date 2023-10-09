@@ -14,9 +14,10 @@
 
 int main (void) {
 
-    int max_power = 0;
-    std::cin >> max_power;
-    Solution solution (max_power);
+    int width = 0;
+    int height = 0;
+    std::cin >> width >> height;
+    Solution solution (std::max (width, height), std::min (width, height));
 
 
 
@@ -32,77 +33,134 @@ int main (void) {
 
 //--------------------------------------------------
 
-Solution::Solution (int max_power):
-        max_power_ (max_power),
-        answer_ (-1),
-        dp ((max_power + 1) * (max_power + 1), -1) {}
+Solution::Solution (int width, int height):
+        width_  (width),
+        height_ (height),
+
+        profiles_count_ (1ull << height),
+
+        transitions_ (profiles_count_ * profiles_count_, false),
+        dp_          (width * profiles_count_, -1),
+
+        answer_      (-1) {}
 
 //--------------------------------------------------
 
 void Solution::pre_solve (void) {
 
-    for (int i = 1; i <= max_power_; ++i) {
+    for (Profile i = 0; i < profiles_count_; ++i) {
 
-        set_dp (i, i, 1); // count is 1 when total power == minimal power
+        set_dp (0, i, 1);
     }
 }
 
 
 void Solution::solve (void) {
 
+    fill_transitions ();
+    count_answer ();
+}
+
+
+LL Solution::count_dp (int x, Profile profile) {
+
+    ULL index = x * (profiles_count_) + profile;
+
+    // already counted
+    if (dp_ [index] != -1) return dp_ [index];
+
+    //--------------------------------------------------
+
+    dp_ [index] = 0;
+
+    for (Profile prev = 0; prev < profiles_count_; ++prev) {
+
+        if (!is_transition (profile, prev)) continue;
+
+        dp_ [index] += count_dp (x - 1, prev);
+    }
+
+
+    return dp_ [index];
+}
+
+
+void Solution::fill_transitions (void) {
+
+    for (Profile i = 0; i < profiles_count_; ++i) {
+
+        for (Profile j = 0; j < profiles_count_; ++j) {
+
+            if (!is_transition (i, j)) continue;
+
+            set_transition (i, j, true);
+        }
+    }
+}
+
+
+void Solution::count_answer (void) {
+
     answer_ = 0;
 
-    for (int i = 1; i <= max_power_; ++i) {
+    for (Profile profile = 0; profile < profiles_count_; ++profile) {
 
-        answer_ += recount_dp (max_power_, i);
+        answer_ += count_dp (width_ - 1, profile);
     }
 }
 
 
-int Solution::recount_dp (int power, int min_number_power) {
+bool Solution::is_transition (Profile from, Profile to) {
 
-    int index = power * (max_power_ + 1) + min_number_power;
+    Profile black_match =   from  &   to;
+    Profile   red_match = (~from) & (~to);
 
+    black_match &= profiles_count_ - 1;
+      red_match &= profiles_count_ - 1;
 
-    // уже посчитано
-    if (dp [index] != -1) return dp [index];
+    //--------------------------------------------------
 
-
-    // ща пощитаем..
-    dp [index] = 0;
-
-    // перебираем возможные суффиксы
-    int suffix_power = power - min_number_power;
-    if (suffix_power < 1) { dp [index] = 0; return 0; }
-
-    for (int min_suffix_power = 2 * min_number_power; min_suffix_power <= suffix_power;
-                                                      ++min_suffix_power) {
-
-        dp [index] += recount_dp (suffix_power, min_suffix_power);
-    }
+    if (black_match & (black_match << 1)) return false;
+    if (  red_match & (  red_match << 1)) return false;
 
 
-    if (dp [index] == -1) dp [index] = 0;
-
-
-    return dp [index];
+    return true;
 }
 
 
-int Solution::get_dp (int power, int min_number_power) {
+bool Solution::get_transition (Profile from, Profile to) {
 
-    int index = power * (max_power_ + 1) + min_number_power;
+    ULL index = from * (profiles_count_) + to;
 
 
-    return dp [index];
+    return transitions_ [index];
 }
 
 
-void Solution::set_dp (int power, int min_number_power, int value) {
+void Solution::set_transition (Profile from, Profile to, bool value) {
 
-    int index = power * (max_power_ + 1) + min_number_power;
+    ULL index = from * (profiles_count_) + to;
 
-    dp [index] = value;
+
+    transitions_ [index] = value;
+}
+
+
+LL Solution::get_dp (int x, Profile profile) {
+
+    ULL index = x * (profiles_count_) + profile;
+
+
+    return dp_ [index];
+}
+
+
+void Solution::set_dp (int x, Profile profile, LL value) {
+
+    ULL index = x * (profiles_count_) + profile;
+
+
+    dp_ [index] = value;
 }
 
 
@@ -112,16 +170,30 @@ void Solution::print_result (void) {
 }
 
 
-void Solution::print_dp (void) {
+void Solution::print_transitions (void) {
 
-    for (int power = 1; power <= max_power_; ++power) {
+    for (Profile i = 0; i < profiles_count_; ++i) {
 
-        for (int min_number_power = 1; min_number_power <= max_power_;
-                                       ++min_number_power) {
+        for (Profile j = 0; j < profiles_count_; ++j) {
 
-            std::cout << get_dp (power, min_number_power) << " ";
+            std::cout << get_transition (i, j) << " ";
         }
 
         std::cout << "\n";
     }
 }
+
+
+void Solution::print_dp (void) {
+
+    for (Profile profile = 0; profile < profiles_count_; ++profile) {
+
+        for (int x = 0; x < width_; ++x) {
+
+            std::cout << get_dp (x, profile) << " ";
+        }
+
+        std::cout << "\n";
+    }
+}
+
