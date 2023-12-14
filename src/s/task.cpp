@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <cassert>
-#include <limits.h>
 
 //--------------------------------------------------
 
@@ -17,7 +16,7 @@ int main (void) {
     int width = 0;
     int height = 0;
     std::cin >> width >> height;
-    Solution solution (std::max (width, height), std::min (width, height));
+    Solution solution (width, height);
 
 
 
@@ -34,8 +33,8 @@ int main (void) {
 //--------------------------------------------------
 
 Solution::Solution (int width, int height):
-        width_  (width),
-        height_ (height),
+        width_  (std::max (width, height)),
+        height_ (std::min (width, height)),
 
         profiles_count_ (1ull << height),
 
@@ -62,9 +61,9 @@ void Solution::solve (void) {
 }
 
 
-LL Solution::count_dp (int x, Profile profile) {
+int64_t Solution::count_dp (int x, Profile profile) {
 
-    ULL index = x * (profiles_count_) + profile;
+    uint64_t index = x * (profiles_count_) + profile;
 
     // already counted
     if (dp_ [index] != -1) return dp_ [index];
@@ -130,7 +129,7 @@ bool Solution::is_transition (Profile from, Profile to) {
 
 bool Solution::get_transition (Profile from, Profile to) {
 
-    ULL index = from * (profiles_count_) + to;
+    uint64_t index = from * (profiles_count_) + to;
 
 
     return transitions_ [index];
@@ -139,25 +138,25 @@ bool Solution::get_transition (Profile from, Profile to) {
 
 void Solution::set_transition (Profile from, Profile to, bool value) {
 
-    ULL index = from * (profiles_count_) + to;
+    uint64_t index = from * (profiles_count_) + to;
 
 
     transitions_ [index] = value;
 }
 
 
-LL Solution::get_dp (int x, Profile profile) {
+int64_t Solution::get_dp (int x, Profile profile) {
 
-    ULL index = x * (profiles_count_) + profile;
+    uint64_t index = x * (profiles_count_) + profile;
 
 
     return dp_ [index];
 }
 
 
-void Solution::set_dp (int x, Profile profile, LL value) {
+void Solution::set_dp (int x, Profile profile, int64_t value) {
 
-    ULL index = x * (profiles_count_) + profile;
+    uint64_t index = x * (profiles_count_) + profile;
 
 
     dp_ [index] = value;
@@ -196,4 +195,6 @@ void Solution::print_dp (void) {
         std::cout << "\n";
     }
 }
+
+//--------------------------------------------------
 

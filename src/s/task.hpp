@@ -3,17 +3,30 @@
 //--------------------------------------------------
 
 #include <vector>
+#include <stdint.h>
 
 //--------------------------------------------------
 
-typedef unsigned long long Profile;
-typedef unsigned long long ULL;
-typedef long long LL;
+typedef uint64_t Profile;
 
 //--------------------------------------------------
-
 
 class Solution {
+
+  public:
+
+    Solution (int width, int height);
+
+    //--------------------------------------------------
+
+    void pre_solve (void);
+    void solve (void);
+    void print_result (void);
+
+    void print_transitions (void);
+    void print_dp          (void);
+
+  private:
 
     int width_;
     int height_;
@@ -36,18 +49,6 @@ class Solution {
     void set_dp (int x, Profile profile, LL value);
 
     //--------------------------------------------------
-
-  public:
-
-    Solution (int width, int height);
-
-
-    void pre_solve (void);
-    void solve (void);
-    void print_result (void);
-
-    void print_transitions (void);
-    void print_dp          (void);
 
 };
 
