@@ -12,6 +12,9 @@
 
 //--------------------------------------------------
 
+static int Solution::bad_dp_value = -1;
+
+//--------------------------------------------------
 
 int main (void) {
 
@@ -32,7 +35,7 @@ int main (void) {
 
 //--------------------------------------------------
 
-Int_Pair::Int_Pair (int x, int y):
+Position::Position (int x, int y):
         x_ (x),
         y_ (y) {}
 
@@ -53,20 +56,21 @@ void Solution::read_data (void) {
 
 void Solution::pre_solve (void) {
 
-    for (int i = 0; i < ((int) string1.size () + 1) * ((int) string2.size () + 1); ++i) {
-
-        dp.push_back (-1);
+    for (int i = 0; i < (static_cast <int> (string1.size ()) + 1) *
+                        (static_cast <int> (string2.size ()) + 1); ++i)
+    {
+        dp.push_back (bad_dp_value);
         dp_last_indexes.push_back ( { -1, -1 } );
     }
 
     //--------------------------------------------------
 
-    for (int i = 0; i < (int) string1.size () + 1; ++i) {
+    for (int i = 0; i < static_cast <int> (string1.size ()) + 1; ++i) {
 
         set_dp (i, 0, 0);
     }
 
-    for (int i = 0; i < (int) string2.size () + 1; ++i) {
+    for (int i = 0; i < static_cast <int> (string2.size ()) + 1; ++i) {
 
         set_dp (0, i, 0);
     }
@@ -84,7 +88,7 @@ int Solution::count_dp (int prefix1_len, int prefix2_len) {
     int index = prefix1_len * ((int) string2.size () + 1) + prefix2_len;
 
 
-    if (dp [index] != -1) return dp [index];
+    if (dp [index] != bad_dp_value) return dp [index];
 
 
     if (string1 [prefix1_len - 1] == string2 [prefix2_len - 1]) {
@@ -138,7 +142,7 @@ void Solution::set_dp (int prefix1_len, int prefix2_len, int value) {
 }
 
 
-Int_Pair Solution::get_dp_last_indexes (int prefix1_len, int prefix2_len) {
+Position Solution::get_dp_last_indexes (int prefix1_len, int prefix2_len) {
 
     int index = prefix1_len * ((int) string2.size () + 1) + prefix2_len;
 
@@ -147,7 +151,7 @@ Int_Pair Solution::get_dp_last_indexes (int prefix1_len, int prefix2_len) {
 }
 
 
-void Solution::set_dp_last_indexes (int prefix1_len, int prefix2_len, Int_Pair value) {
+void Solution::set_dp_last_indexes (int prefix1_len, int prefix2_len, Position value) {
 
     int index = prefix1_len * ((int) string2.size () + 1) + prefix2_len;
 
@@ -171,14 +175,14 @@ void Solution::print_lcs1 (int prefix1, int prefix2) {
     if (!prefix1 || !prefix2) return;
 
 
-    if (get_dp_last_indexes (prefix1, prefix2) == Int_Pair (prefix1 - 1, prefix2 - 1)) {
+    if (get_dp_last_indexes (prefix1, prefix2) == Position (prefix1 - 1, prefix2 - 1)) {
 
         print_lcs1 (prefix1 - 1, prefix2 - 1);
         std::cout << prefix1 << " ";
         return;
     }
 
-    if (get_dp_last_indexes (prefix1, prefix2) == Int_Pair (prefix1 - 1, prefix2)) {
+    if (get_dp_last_indexes (prefix1, prefix2) == Position (prefix1 - 1, prefix2)) {
 
         print_lcs1 (prefix1 - 1, prefix2);
         return;
@@ -194,14 +198,14 @@ void Solution::print_lcs2 (int prefix1, int prefix2) {
     if (!prefix1 || !prefix2) return;
 
 
-    if (get_dp_last_indexes (prefix1, prefix2) == Int_Pair (prefix1 - 1, prefix2 - 1)) {
+    if (get_dp_last_indexes (prefix1, prefix2) == Position (prefix1 - 1, prefix2 - 1)) {
 
         print_lcs2 (prefix1 - 1, prefix2 - 1);
         std::cout << prefix2 << " ";
         return;
     }
 
-    if (get_dp_last_indexes (prefix1, prefix2) == Int_Pair (prefix1 - 1, prefix2)) {
+    if (get_dp_last_indexes (prefix1, prefix2) == Position (prefix1 - 1, prefix2)) {
 
         print_lcs2 (prefix1 - 1, prefix2);
         return;
@@ -226,7 +230,7 @@ void Solution::print_dp (void) {
 }
 
 
-bool operator== (Int_Pair pair1, Int_Pair pair2) {
+bool operator== (Position pair1, Position pair2) {
 
     if (pair1.x_ != pair2.x_) return false;
     if (pair1.y_ != pair2.y_) return false;
