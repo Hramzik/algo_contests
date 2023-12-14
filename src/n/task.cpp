@@ -60,7 +60,6 @@ Port::Port (long long x, long long y, long long flights):
         y_       (y),
         flights_ (flights) {}
 
-
 Solution::Solution (int ports_count, int lines_count):
         ports_count_ (ports_count),
         ports_       (),
@@ -69,12 +68,6 @@ Solution::Solution (int ports_count, int lines_count):
         answer_      () {}
 
 //--------------------------------------------------
-
-void Solution::pre_solve (void) {
-
-    
-}
-
 
 void Solution::solve (void) {
 
@@ -85,17 +78,19 @@ void Solution::solve (void) {
 
         for (int j = 0; j < ports_count_; ++j) {
 
+            //--------------------------------------------------
+            // dp is needed for Fibonacci counting
             Matrix2x2 dp (1, 1, 1, 0);
+
             Port port = ports_ [j];
             long long port_height = port.y_ - port.x_;
             long long distance = port_height - line;
 
             if (distance < 0) continue;
 
-            //std::cout << "distance " << distance << "\n";
+            //--------------------------------------------------
 
             dp.pow (distance + 1);
-            //std::cout << "fibonaci " << dp.x12_ << "\n";
 
             accumulator += (dp.x12_ * port.flights_) % ANSWER_BY_MODULE;
             accumulator %= ANSWER_BY_MODULE;
@@ -106,76 +101,28 @@ void Solution::solve (void) {
     }
 }
 
-
-
-
 void Solution::print_result (void) {
 
-    for (int i = 0; i < (int) answer_.size (); ++i) {
+    for (int i = 0; i < static_cast <int> (answer_.size ()); ++i) {
 
         std::cout << answer_ [i] << "\n";
     }
 }
-
-/*
-void Solution::print_dp (void) {
-
-    for (int power = 1; power <= max_power_; ++power) {
-
-        for (int min_number_power = 1; min_number_power <= max_power_;
-                                       ++min_number_power) {
-
-            std::cout << get_dp (power, min_number_power) << " ";
-        }
-
-        std::cout << "\n";
-    }
-}
-*/
-
 
 void Solution::add_port (Port port) {
 
     ports_.push_back (port);
 }
 
-
 void Solution::add_line (long long line) {
 
     lines_.push_back (line);
 }
 
-/*
-int Solution::recount_dp (int power, int min_number_power) {
+//--------------------------------------------------
+// Matrix code
 
-    int index = power * (max_power_ + 1) + min_number_power;
-
-
-    
-
-
-    return dp [index];
-}
-
-
-int Solution::get_dp (int power, int min_number_power) {
-
-    int index = power * (max_power_ + 1) + min_number_power;
-
-
-    return dp [index];
-}
-
-
-void Solution::set_dp (int power, int min_number_power, int value) {
-
-    int index = power * (max_power_ + 1) + min_number_power;
-
-    dp [index] = value;
-}*/
-
-const Matrix2x2 Matrix2x2::E (1, 0, 0, 1);
-
+const Matrix2x2 Matrix2x2::UnitMatrix (1, 0, 0, 1);
 
 Matrix2x2::Matrix2x2 (long long x11, long long x12, long long x21, long long x22):
         x11_ (x11),
@@ -186,7 +133,7 @@ Matrix2x2::Matrix2x2 (long long x11, long long x12, long long x21, long long x22
 
 void Matrix2x2::pow (long long n) {
 
-    if (!n) {*this = E; return; }
+    if (!n) {*this = UnitMatrix; return; }
 
 
     if (n % 2 == 0) {
@@ -216,3 +163,6 @@ void Matrix2x2::operator*= (Matrix2x2& rhs) {
     x21_ = new_x21_ % ANSWER_BY_MODULE;
     x22_ = new_x22_ % ANSWER_BY_MODULE;
 }
+
+//--------------------------------------------------
+

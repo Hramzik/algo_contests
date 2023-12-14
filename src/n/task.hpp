@@ -20,7 +20,7 @@ class Matrix2x2 {
     long long x21_;
     long long x22_;
 
-    static const Matrix2x2 E;
+    static const Matrix2x2 UnitMatrix;
 
     //--------------------------------------------------
 
@@ -73,7 +73,6 @@ class Solution {
     void add_port (Port port);
     void add_line (long long line);
 
-    void pre_solve (void);
     void solve (void);
     void print_result (void);
     void print_dp (void);
