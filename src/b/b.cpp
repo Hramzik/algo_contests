@@ -138,13 +138,13 @@ std::ostream& operator<< (std::ostream& stream, const Matrix5x5& matrix) {
 
         for (int column = 0; column < 5; ++column) {
 
-            std::cout << matrix.get (row, column) << " ";
+            stream << matrix.get (row, column) << " ";
         }
 
-        std::cout << "\n";
+        stream << "\n";
     }
 
-    std::cout << "\n";
+    stream << "\n";
 
 
     return stream;
