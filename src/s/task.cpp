@@ -16,15 +16,17 @@ int main (void) {
     int width = 0;
     int height = 0;
     std::cin >> width >> height;
-    Solution solution (width, height);
+    PatternCounter solution (width, height);
 
+    //--------------------------------------------------
 
+    solution.count_patterns ();
 
-    solution.pre_solve ();
-    solution.solve ();
-    //solution.print_dp ();
-    solution.print_result ();
+    //--------------------------------------------------
 
+    std::cout << solution.get_answer ();
+
+    //--------------------------------------------------
 
     return 0;
 }
@@ -32,7 +34,7 @@ int main (void) {
 
 //--------------------------------------------------
 
-Solution::Solution (int width, int height):
+PatternCounter::PatternCounter (int width, int height):
         width_  (std::max (width, height)),
         height_ (std::min (width, height)),
 
@@ -41,11 +43,14 @@ Solution::Solution (int width, int height):
         transitions_ (profiles_count_ * profiles_count_, false),
         dp_          (width * profiles_count_, -1),
 
-        answer_      (-1) {}
+        answer_      (-1)
+{
+    init ();
+}
 
 //--------------------------------------------------
 
-void Solution::pre_solve (void) {
+void PatternCounter::init (void) {
 
     for (Profile i = 0; i < profiles_count_; ++i) {
 
@@ -54,14 +59,14 @@ void Solution::pre_solve (void) {
 }
 
 
-void Solution::solve (void) {
+void PatternCounter::count_patterns (void) {
 
     fill_transitions ();
     count_answer ();
 }
 
 
-int64_t Solution::count_dp (int x, Profile profile) {
+int64_t PatternCounter::count_dp (int x, Profile profile) {
 
     uint64_t index = x * (profiles_count_) + profile;
 
@@ -84,7 +89,7 @@ int64_t Solution::count_dp (int x, Profile profile) {
 }
 
 
-void Solution::fill_transitions (void) {
+void PatternCounter::fill_transitions (void) {
 
     for (Profile i = 0; i < profiles_count_; ++i) {
 
@@ -98,7 +103,7 @@ void Solution::fill_transitions (void) {
 }
 
 
-void Solution::count_answer (void) {
+void PatternCounter::count_answer (void) {
 
     answer_ = 0;
 
@@ -109,7 +114,7 @@ void Solution::count_answer (void) {
 }
 
 
-bool Solution::is_transition (Profile from, Profile to) {
+bool PatternCounter::is_transition (Profile from, Profile to) {
 
     Profile black_match =   from  &   to;
     Profile   red_match = (~from) & (~to);
@@ -127,7 +132,7 @@ bool Solution::is_transition (Profile from, Profile to) {
 }
 
 
-bool Solution::get_transition (Profile from, Profile to) {
+bool PatternCounter::get_transition (Profile from, Profile to) {
 
     uint64_t index = from * (profiles_count_) + to;
 
@@ -136,7 +141,7 @@ bool Solution::get_transition (Profile from, Profile to) {
 }
 
 
-void Solution::set_transition (Profile from, Profile to, bool value) {
+void PatternCounter::set_transition (Profile from, Profile to, bool value) {
 
     uint64_t index = from * (profiles_count_) + to;
 
@@ -145,7 +150,7 @@ void Solution::set_transition (Profile from, Profile to, bool value) {
 }
 
 
-int64_t Solution::get_dp (int x, Profile profile) {
+int64_t PatternCounter::get_dp (int x, Profile profile) {
 
     uint64_t index = x * (profiles_count_) + profile;
 
@@ -154,7 +159,7 @@ int64_t Solution::get_dp (int x, Profile profile) {
 }
 
 
-void Solution::set_dp (int x, Profile profile, int64_t value) {
+void PatternCounter::set_dp (int x, Profile profile, int64_t value) {
 
     uint64_t index = x * (profiles_count_) + profile;
 
@@ -163,37 +168,9 @@ void Solution::set_dp (int x, Profile profile, int64_t value) {
 }
 
 
-void Solution::print_result (void) {
+int64_t PatternCounter::get_answer (void) {
 
-    std::cout << answer_;
-}
-
-
-void Solution::print_transitions (void) {
-
-    for (Profile i = 0; i < profiles_count_; ++i) {
-
-        for (Profile j = 0; j < profiles_count_; ++j) {
-
-            std::cout << get_transition (i, j) << " ";
-        }
-
-        std::cout << "\n";
-    }
-}
-
-
-void Solution::print_dp (void) {
-
-    for (Profile profile = 0; profile < profiles_count_; ++profile) {
-
-        for (int x = 0; x < width_; ++x) {
-
-            std::cout << get_dp (x, profile) << " ";
-        }
-
-        std::cout << "\n";
-    }
+    return answer_;
 }
 
 //--------------------------------------------------
