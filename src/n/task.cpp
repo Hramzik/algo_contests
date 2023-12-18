@@ -2,9 +2,6 @@
 //--------------------------------------------------
 
 #include <iostream>
-#include <cassert>
-#include <cmath>
-#include <limits.h>
 
 //--------------------------------------------------
 
@@ -12,6 +9,9 @@
 
 //--------------------------------------------------
 
+static void print_result (TravelCounter& solver);
+
+//--------------------------------------------------
 
 int main (void) {
 
@@ -20,7 +20,7 @@ int main (void) {
 
     std::cin >> ports_count >> lines_count;
 
-    Solution solution (ports_count, lines_count);
+    TravelCounter solution (ports_count, lines_count);
 
     //--------------------------------------------------
 
@@ -43,24 +43,37 @@ int main (void) {
 
     //--------------------------------------------------
 
-    solution.pre_solve ();
     solution.solve ();
-    //solution.print_dp ();
-    solution.print_result ();
 
+    //--------------------------------------------------
+
+    print_result (solution);
+
+    //--------------------------------------------------
 
     return 0;
 }
 
+static void print_result (TravelCounter& solver) {
+
+    std::vector <int64_t>& answer = solver.get_answer ();
+
+    //--------------------------------------------------
+
+    for (int i = 0; i < static_cast <int> (answer.size ()); ++i) {
+
+        std::cout << answer [i] << "\n";
+    }
+}
 
 //--------------------------------------------------
 
-Port::Port (long long x, long long y, long long flights):
+Port::Port (int64_t x, int64_t y, int64_t flights):
         x_       (x),
         y_       (y),
         flights_ (flights) {}
 
-Solution::Solution (int ports_count, int lines_count):
+TravelCounter::TravelCounter (int ports_count, int lines_count):
         ports_count_ (ports_count),
         ports_       (),
         lines_count_ (lines_count),
@@ -69,12 +82,12 @@ Solution::Solution (int ports_count, int lines_count):
 
 //--------------------------------------------------
 
-void Solution::solve (void) {
+void TravelCounter::solve (void) {
 
     for (int i = 0; i < lines_count_; ++i) {
 
-        long long line = lines_ [i];
-        long long accumulator = 0;
+        int64_t line = lines_ [i];
+        int64_t accumulator = 0;
 
         for (int j = 0; j < ports_count_; ++j) {
 
@@ -83,8 +96,8 @@ void Solution::solve (void) {
             Matrix2x2 dp (1, 1, 1, 0);
 
             Port port = ports_ [j];
-            long long port_height = port.y_ - port.x_;
-            long long distance = port_height - line;
+            int64_t port_height = port.y_ - port.x_;
+            int64_t distance = port_height - line;
 
             if (distance < 0) continue;
 
@@ -101,20 +114,17 @@ void Solution::solve (void) {
     }
 }
 
-void Solution::print_result (void) {
+std::vector <int64_t>& TravelCounter::get_answer (void) {
 
-    for (int i = 0; i < static_cast <int> (answer_.size ()); ++i) {
-
-        std::cout << answer_ [i] << "\n";
-    }
+    return answer_;
 }
 
-void Solution::add_port (Port port) {
+void TravelCounter::add_port (Port port) {
 
     ports_.push_back (port);
 }
 
-void Solution::add_line (long long line) {
+void TravelCounter::add_line (int64_t line) {
 
     lines_.push_back (line);
 }
@@ -124,14 +134,13 @@ void Solution::add_line (long long line) {
 
 const Matrix2x2 Matrix2x2::UnitMatrix (1, 0, 0, 1);
 
-Matrix2x2::Matrix2x2 (long long x11, long long x12, long long x21, long long x22):
+Matrix2x2::Matrix2x2 (int64_t x11, int64_t x12, int64_t x21, int64_t x22):
         x11_ (x11),
         x12_ (x12),
         x21_ (x21),
         x22_ (x22) {}
 
-
-void Matrix2x2::pow (long long n) {
+void Matrix2x2::pow (int64_t n) {
 
     if (!n) {*this = UnitMatrix; return; }
 
@@ -150,18 +159,21 @@ void Matrix2x2::pow (long long n) {
     operator*= (old_me);
 }
 
+Matrix2x2& Matrix2x2::operator*= (const Matrix2x2& rhs) {
 
-void Matrix2x2::operator*= (Matrix2x2& rhs) {
-
-    long long new_x11_ = (x11_ * rhs.x11_) % ANSWER_BY_MODULE + (x12_ * rhs.x21_) % ANSWER_BY_MODULE;
-    long long new_x12_ = (x11_ * rhs.x12_) % ANSWER_BY_MODULE + (x12_ * rhs.x22_) % ANSWER_BY_MODULE;
-    long long new_x21_ = (x21_ * rhs.x11_) % ANSWER_BY_MODULE + (x22_ * rhs.x21_) % ANSWER_BY_MODULE;
-    long long new_x22_ = (x21_ * rhs.x12_) % ANSWER_BY_MODULE + (x22_ * rhs.x22_) % ANSWER_BY_MODULE;
+    int64_t new_x11_ = (x11_ * rhs.x11_) % ANSWER_BY_MODULE + (x12_ * rhs.x21_) % ANSWER_BY_MODULE;
+    int64_t new_x12_ = (x11_ * rhs.x12_) % ANSWER_BY_MODULE + (x12_ * rhs.x22_) % ANSWER_BY_MODULE;
+    int64_t new_x21_ = (x21_ * rhs.x11_) % ANSWER_BY_MODULE + (x22_ * rhs.x21_) % ANSWER_BY_MODULE;
+    int64_t new_x22_ = (x21_ * rhs.x12_) % ANSWER_BY_MODULE + (x22_ * rhs.x22_) % ANSWER_BY_MODULE;
 
     x11_ = new_x11_ % ANSWER_BY_MODULE;
     x12_ = new_x12_ % ANSWER_BY_MODULE;
     x21_ = new_x21_ % ANSWER_BY_MODULE;
     x22_ = new_x22_ % ANSWER_BY_MODULE;
+
+    //--------------------------------------------------
+
+    return *this;
 }
 
 //--------------------------------------------------

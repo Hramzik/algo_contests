@@ -3,6 +3,7 @@
 //--------------------------------------------------
 
 #include <vector>
+#include <cstdint>
 
 //--------------------------------------------------
 
@@ -15,19 +16,23 @@ class Matrix2x2 {
 
   public:
 
-    long long x11_;
-    long long x12_;
-    long long x21_;
-    long long x22_;
-
     static const Matrix2x2 UnitMatrix;
 
     //--------------------------------------------------
 
-    Matrix2x2 (long long x11, long long x12, long long x21, long long x22);
-    void operator*= (Matrix2x2& rhs);
+    Matrix2x2 (int64_t x11, int64_t x12, int64_t x21, int64_t x22);
 
-    void pow (long long n);
+    //--------------------------------------------------
+
+    Matrix2x2& operator*= (const Matrix2x2& rhs);
+    void pow (int64_t n);
+
+    //--------------------------------------------------
+
+    int64_t x11_;
+    int64_t x12_;
+    int64_t x21_;
+    int64_t x22_;
 };
 
 
@@ -38,45 +43,45 @@ class Port {
 
   public:
 
-    long long x_;
-    long long y_;
+    int64_t x_;
+    int64_t y_;
 
-    long long flights_;
+    int64_t flights_;
 
-    Port (long long x, long long y, long long flights);
+    Port (int64_t x, int64_t y, int64_t flights);
 };
 
 
 //--------------------------------------------------
 // SOLUTION CODE
 
-class Solution {
+class TravelCounter {
+
+  public:
+
+    TravelCounter (int ports_count, int lines_count);
+
+    void add_port (Port port);
+    void add_line (int64_t line);
+
+    void                   solve      (void);
+    std::vector <int64_t>& get_answer (void);
+
+  private:
 
     int ports_count_;
     std::vector <Port> ports_;
 
     int lines_count_;
-    std::vector <long long> lines_;
+    std::vector <int64_t> lines_;
 
-    std::vector <long long> answer_;
+    std::vector <int64_t> answer_;
 
     //--------------------------------------------------
 
     int  recount_dp (int power, int min_number_power);
     int  get_dp     (int power, int min_number_power);
     void set_dp     (int power, int min_number_power, int value);
-
-  public:
-
-    Solution (int ports_count, int lines_count);
-
-    void add_port (Port port);
-    void add_line (long long line);
-
-    void solve (void);
-    void print_result (void);
-    void print_dp (void);
-
 };
 
 
