@@ -12,22 +12,31 @@
 
 //--------------------------------------------------
 
-static int Solution::bad_dp_value = -1;
+int LcsFinder::bad_dp_value = -1;
+
+//--------------------------------------------------
+
+void print_result (LcsFinder& solver);
+void print_lcs1   (LcsFinder& solver, int prefix1, int prefix2);
+void print_lcs2   (LcsFinder& solver, int prefix1, int prefix2);
 
 //--------------------------------------------------
 
 int main (void) {
 
-    Solution solution;
-    solution.read_data ();
+    std::string string1; std::cin >> string1;
+    std::string string2; std::cin >> string2;
+    LcsFinder solver (string1, string2);
 
+    //--------------------------------------------------
 
+    solver.solve ();
 
-    solution.pre_solve ();
-    solution.solve ();
-    //solution.print_dp ();
-    solution.print_result ();
+    //--------------------------------------------------
 
+    print_result (solver);
+
+    //--------------------------------------------------
 
     return 0;
 }
@@ -40,24 +49,21 @@ Position::Position (int x, int y):
         y_ (y) {}
 
 
-Solution::Solution ():
-        string1 (),
-        string2 (),
+LcsFinder::LcsFinder (std::string& string1, std::string& string2):
+        string1_ (string1),
+        string2_ (string2),
         dp (),
-        dp_last_indexes () {}
+        dp_last_indexes ()
+{
+    init ();
+}
 
 //--------------------------------------------------
 
-void Solution::read_data (void) {
+void LcsFinder::init (void) {
 
-    std::cin >> string1 >> string2;
-}
-
-
-void Solution::pre_solve (void) {
-
-    for (int i = 0; i < (static_cast <int> (string1.size ()) + 1) *
-                        (static_cast <int> (string2.size ()) + 1); ++i)
+    for (int i = 0; i < (static_cast <int> (string1_.size ()) + 1) *
+                        (static_cast <int> (string2_.size ()) + 1); ++i)
     {
         dp.push_back (bad_dp_value);
         dp_last_indexes.push_back ( { -1, -1 } );
@@ -65,33 +71,33 @@ void Solution::pre_solve (void) {
 
     //--------------------------------------------------
 
-    for (int i = 0; i < static_cast <int> (string1.size ()) + 1; ++i) {
+    for (int i = 0; i < static_cast <int> (string1_.size ()) + 1; ++i) {
 
         set_dp (i, 0, 0);
     }
 
-    for (int i = 0; i < static_cast <int> (string2.size ()) + 1; ++i) {
+    for (int i = 0; i < static_cast <int> (string2_.size ()) + 1; ++i) {
 
         set_dp (0, i, 0);
     }
 }
 
 
-void Solution::solve (void) {
+void LcsFinder::solve (void) {
 
-    answer_ = count_dp ((int) string1.size (), (int) string2.size ());
+    answer_ = count_dp ((int) string1_.size (), (int) string2_.size ());
 }
 
 
-int Solution::count_dp (int prefix1_len, int prefix2_len) {
+int LcsFinder::count_dp (int prefix1_len, int prefix2_len) {
 
-    int index = prefix1_len * ((int) string2.size () + 1) + prefix2_len;
+    int index = prefix1_len * ((int) string2_.size () + 1) + prefix2_len;
 
 
     if (dp [index] != bad_dp_value) return dp [index];
 
 
-    if (string1 [prefix1_len - 1] == string2 [prefix2_len - 1]) {
+    if (string1_ [prefix1_len - 1] == string2_ [prefix2_len - 1]) {
 
         dp [index] = count_dp (prefix1_len - 1, prefix2_len - 1) + 1;
 
@@ -124,103 +130,103 @@ int Solution::count_dp (int prefix1_len, int prefix2_len) {
 }
 
 
-int Solution::get_dp (int prefix1_len, int prefix2_len) {
+int LcsFinder::get_dp (int prefix1_len, int prefix2_len) {
 
-    int index = prefix1_len * ((int) string2.size () + 1) + prefix2_len;
+    int index = prefix1_len * ((int) string2_.size () + 1) + prefix2_len;
 
 
     return dp [index];
 }
 
 
-void Solution::set_dp (int prefix1_len, int prefix2_len, int value) {
+void LcsFinder::set_dp (int prefix1_len, int prefix2_len, int value) {
 
-    int index = prefix1_len * ((int) string2.size () + 1) + prefix2_len;
+    int index = prefix1_len * ((int) string2_.size () + 1) + prefix2_len;
 
 
     dp [index] = value;
 }
 
 
-Position Solution::get_dp_last_indexes (int prefix1_len, int prefix2_len) {
+Position LcsFinder::get_dp_last_indexes (int prefix1_len, int prefix2_len) {
 
-    int index = prefix1_len * ((int) string2.size () + 1) + prefix2_len;
+    int index = prefix1_len * ((int) string2_.size () + 1) + prefix2_len;
 
 
     return dp_last_indexes [index];
 }
 
 
-void Solution::set_dp_last_indexes (int prefix1_len, int prefix2_len, Position value) {
+void LcsFinder::set_dp_last_indexes (int prefix1_len, int prefix2_len, Position value) {
 
-    int index = prefix1_len * ((int) string2.size () + 1) + prefix2_len;
+    int index = prefix1_len * ((int) string2_.size () + 1) + prefix2_len;
 
 
     dp_last_indexes [index] = value;
 }
 
 
-void Solution::print_result (void) {
+void print_result (LcsFinder& solver) {
 
-    std::cout << answer_ << "\n";
+    std::cout << solver.answer_ << "\n";
 
-    print_lcs1 ((int) string1.size (), (int) string2.size ());
+    print_lcs1 (solver, static_cast <int> (solver.string1_.size ()), static_cast <int> (solver.string2_.size ()));
     std::cout << "\n";
-    print_lcs2 ((int) string1.size (), (int) string2.size ());
+    print_lcs2 (solver, static_cast <int> (solver.string1_.size ()), static_cast <int> (solver.string2_.size ()));
 }
 
 
-void Solution::print_lcs1 (int prefix1, int prefix2) {
+void print_lcs1 (LcsFinder& solver, int prefix1, int prefix2) {
 
     if (!prefix1 || !prefix2) return;
 
 
-    if (get_dp_last_indexes (prefix1, prefix2) == Position (prefix1 - 1, prefix2 - 1)) {
+    if (solver.get_dp_last_indexes (prefix1, prefix2) == Position (prefix1 - 1, prefix2 - 1)) {
 
-        print_lcs1 (prefix1 - 1, prefix2 - 1);
+        print_lcs1 (solver, prefix1 - 1, prefix2 - 1);
         std::cout << prefix1 << " ";
         return;
     }
 
-    if (get_dp_last_indexes (prefix1, prefix2) == Position (prefix1 - 1, prefix2)) {
+    if (solver.get_dp_last_indexes (prefix1, prefix2) == Position (prefix1 - 1, prefix2)) {
 
-        print_lcs1 (prefix1 - 1, prefix2);
+        print_lcs1 (solver, prefix1 - 1, prefix2);
         return;
     }
 
 
-    print_lcs1 (prefix1, prefix2 - 1);
+    print_lcs1 (solver, prefix1, prefix2 - 1);
 }
 
 
-void Solution::print_lcs2 (int prefix1, int prefix2) {
+void print_lcs2 (LcsFinder& solver, int prefix1, int prefix2) {
 
     if (!prefix1 || !prefix2) return;
 
 
-    if (get_dp_last_indexes (prefix1, prefix2) == Position (prefix1 - 1, prefix2 - 1)) {
+    if (solver.get_dp_last_indexes (prefix1, prefix2) == Position (prefix1 - 1, prefix2 - 1)) {
 
-        print_lcs2 (prefix1 - 1, prefix2 - 1);
+        print_lcs2 (solver, prefix1 - 1, prefix2 - 1);
         std::cout << prefix2 << " ";
         return;
     }
 
-    if (get_dp_last_indexes (prefix1, prefix2) == Position (prefix1 - 1, prefix2)) {
+    if (solver.get_dp_last_indexes (prefix1, prefix2) == Position (prefix1 - 1, prefix2)) {
 
-        print_lcs2 (prefix1 - 1, prefix2);
+        print_lcs2 (solver, prefix1 - 1, prefix2);
         return;
     }
 
 
-    print_lcs2 (prefix1, prefix2 - 1);
+    print_lcs2 (solver, prefix1, prefix2 - 1);
 }
 
 
-void Solution::print_dp (void) {
+void LcsFinder::print_dp (void) {
 
-    for (int i = 0; i < (int) string1.size () + 1; ++i) {
+    for (int i = 0; i < (int) string1_.size () + 1; ++i) {
 
-        for (int j = 0; j < (int) string2.size () + 1; ++j) {
+        for (int j = 0; j < (int) string2_.size () + 1; ++j) {
 
             std::cout << std::setw (2) << get_dp (i, j) << " ";
         }

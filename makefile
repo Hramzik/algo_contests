@@ -4,7 +4,7 @@ cc = gcc
 
 #--------------------------------------------------
 
-TASK_FOLDER   = src/task
+TASK_FOLDER   = src/j
 UNITED_FOLDER = united
 
 exefolder = exe
