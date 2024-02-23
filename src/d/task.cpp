@@ -19,7 +19,7 @@ int main (void) {
     int vertex_count = 0;
     std::cin >> vertex_count;
 
-    Solution solution (vertex_count);
+    Graph graph (vertex_count);
 
     //--------------------------------------------------
 
@@ -32,15 +32,27 @@ int main (void) {
     for (int i = 0; i < edges_count; ++i) {
 
         std::cin >> vertex1 >> vertex2;
-        solution.add_edge (vertex1, vertex2);
+        graph.add_edge (vertex1, vertex2, 0);
     }
 
     //--------------------------------------------------
 
-    solution.pre_solve ();
-    solution.solve ();
-    solution.print_result ();
+    KSSFinder finder (graph);
+    std::vector <int> answer = finder.solve ();
 
+    //--------------------------------------------------
+
+    int kss_count = answer [answer.size () - 1];
+    std::cout << kss_count << "\n";
+
+    //--------------------------------------------------
+
+    for (int i : answer) {
+
+        std::cout << kss_count - i << " ";
+    }
+
+    //--------------------------------------------------
 
     return 0;
 }
@@ -48,44 +60,26 @@ int main (void) {
 
 //--------------------------------------------------
 
-Solution::Solution (int vertex_count):
+KSSFinder::KSSFinder (const Graph& graph):
 
-        m_kss_indexes (vertex_count, -1),
+        m_kss_indexes (graph.m_vertex_count, -1),
         current_kss (0),
 
-        m_vertex_count (vertex_count),
-        m_graph (),
-        m_rgraph (),
-        reordered_vertexes ()
-{
-    for (int i = 0; i < m_vertex_count; ++i) {
+        m_graph  (graph),
+        m_rgraph (graph.get_rgraph ()),
 
-        m_graph.push_back  (Vertex_Info (i));
-        m_rgraph.push_back (Vertex_Info (i));
-    }
-}
+        m_graph_dfs_colors  (graph.m_vertex_count),
+        m_rgraph_dfs_colors (graph.m_vertex_count),
+
+        reordered_vertexes () {}
 
 //--------------------------------------------------
 
-void Solution::add_edge (int vertex1, int vertex2) {
+std::vector <int> KSSFinder::solve (void) {
 
-    m_graph  [vertex1 - 1].m_neighbors.insert (&m_graph  [vertex2 - 1]);
-    m_rgraph [vertex2 - 1].m_neighbors.insert (&m_rgraph [vertex1 - 1]);
-}
+    for (int i = 0; i < m_graph.m_vertex_count; ++i) {
 
-
-void Solution::pre_solve (void) {
-
-    
-}
-
-
-void Solution::solve (void) {
-
-    for (int i = 0; i < m_vertex_count; ++i) {
-
-        Vertex_Info& vertex = m_rgraph [i];
-        if (vertex.m_color != WHITE) continue;
+        if (m_graph_dfs_colors [i] != WHITE) continue;
 
         //--------------------------------------------------
 
@@ -98,73 +92,101 @@ void Solution::solve (void) {
 
     for (int i : reordered_vertexes) {
 
-        Vertex_Info& vertex = m_graph [i];
-        if (vertex.m_color != WHITE) continue;
+        if (m_graph_dfs_colors [i] != WHITE) continue;
 
         //--------------------------------------------------
 
         dfs (i);
         ++current_kss;
     }
-}
-
-
-void Solution::print_result (void) {
-
-    std::cout << current_kss << "\n";
 
     //--------------------------------------------------
 
-    for (int i : m_kss_indexes) {
+    m_kss_indexes.push_back (current_kss);
 
-        std::cout << current_kss - i << " ";
-    }
+    return m_kss_indexes;
 }
 
 //--------------------------------------------------
 
-Vertex_Info::Vertex_Info (int number):
+void KSSFinder::dfs (int vertex_index) {
 
-        m_index (number),
-        m_color  (WHITE),
-
-        m_neighbors () {}
-
-//--------------------------------------------------
-
-void Solution::dfs (int vertex_index) {
-
-    Vertex_Info& vertex = m_graph [vertex_index];
+    m_graph_dfs_colors [vertex_index] = BLACK;
 
     //--------------------------------------------------
 
-    vertex.m_color = BLACK;
     m_kss_indexes [vertex_index] = current_kss;
 
-    for (Vertex_Info* next_vertex : vertex.m_neighbors) {
+    for (Neighbor neighbor : m_graph.m_neighbors [vertex_index]) {
 
-        if (next_vertex->m_color != WHITE) continue;
-        dfs (next_vertex->m_index);
+        if (m_graph_dfs_colors [neighbor.m_vertex] != WHITE) continue;
+        dfs (neighbor.m_vertex);
     }
 }
 
+void KSSFinder::rgraph_dfs (int vertex_index) {
 
-void Solution::rgraph_dfs (int vertex_index) {
-
-    Vertex_Info& vertex = m_rgraph [vertex_index];
+    m_rgraph_dfs_colors [vertex_index] = BLACK;
 
     //--------------------------------------------------
 
-    vertex.m_color = BLACK;
+    for (Neighbor neighbor : m_rgraph.m_neighbors [vertex_index]) {
 
-    for (Vertex_Info* next_vertex : vertex.m_neighbors) {
-
-        if (next_vertex->m_color != WHITE) continue;
-        rgraph_dfs (next_vertex->m_index);
+        if (m_rgraph_dfs_colors [neighbor.m_vertex] != WHITE) continue;
+        rgraph_dfs (neighbor.m_vertex);
     }
 
     //--------------------------------------------------
 
     reordered_vertexes.push_back (vertex_index);
 }
+
+//--------------------------------------------------
+// GRAPH CODE
+
+Edge::Edge (int vertex1, int vertex2, int weight):
+        m_vertex1 (vertex1),
+        m_vertex2 (vertex2),
+        m_weight  (weight) {}
+
+//--------------------------------------------------
+
+Neighbor::Neighbor (int vertex, int weight):
+        m_vertex (vertex),
+        m_weight (weight) {}
+
+//--------------------------------------------------
+
+Graph::Graph (int vertex_count):
+
+        m_vertex_count (vertex_count),
+        m_edges (),
+        m_neighbors (vertex_count) {}
+
+void Graph::add_adge (Edge edge) {
+
+    m_edges.push_back (edge);
+
+    //--------------------------------------------------
+
+    m_neighbors [edge.m_vertex1].push_back (Neighbor (edge.m_vertex2, edge.m_weight));
+}
+
+Graph Graph::get_rgraph (void) {
+
+    Graph rgraph (m_vertex_count);
+
+    //--------------------------------------------------
+
+    for (Edge e : m_edges) {
+
+        rgraph.add_adge (Edge (e.m_vertex2, e.m_vertex1, e.m_weight));
+    }
+
+    //--------------------------------------------------
+
+    return rgraph;
+}
+
+//--------------------------------------------------
 

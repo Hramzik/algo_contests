@@ -13,40 +13,62 @@ enum Color {
     BLACK,
 };
 
-
 //--------------------------------------------------
 
-
-class Vertex_Info {
+class Edge {
 
   public:
 
-    Vertex_Info (int number);
-
-//--------------------------------------------------
-
-    int m_index;
-    Color m_color;
-    std::set <Vertex_Info*> m_neighbors;
-};
-
-
-//--------------------------------------------------
-
-
-class Solution {
-
-  public:
-
-    Solution (int vertex_count);
+    Edge (int vertex1, int vertex2, int weight);
 
     //--------------------------------------------------
 
-    void add_edge (int vertex1, int vertex2);
+    int m_vertex1;
+    int m_vertex2;
+    int m_weight;
+};
 
-    void pre_solve (void);
-    void solve (void);
-    void print_result (void);
+class Neighbor {
+
+  public:
+
+    Neighbor (int vertex, int weight);
+
+    //--------------------------------------------------
+
+    int m_vertex;
+    int m_weight;
+};
+
+class Graph {
+
+  public:
+
+    Graph (int vertex_count);
+
+    //--------------------------------------------------
+
+    void  add_adge (Edge edge);
+    Graph get_rgraph (void);
+
+  //private:
+
+    int                                  m_vertex_count;
+    std::vector <Edge>                   m_edges;
+    std::vector <std::vector <Neighbor>> m_neighbors;
+};
+
+//--------------------------------------------------
+
+class KSSFinder {
+
+  public:
+
+    KSSFinder (const Graph& graph);
+
+    //--------------------------------------------------
+
+    std::vector <int> solve (void);
 
 //--------------------------------------------------
 
@@ -60,14 +82,15 @@ class Solution {
     std::vector <int> m_kss_indexes;
     int current_kss;
 
-    int m_vertex_count;
-    std::vector <Vertex_Info> m_graph;
-    std::vector <Vertex_Info> m_rgraph;
+    const Graph& m_graph;
+    const Graph  m_rgraph;
+
+    std::vector <Color> m_graph_dfs_colors;
+    std::vector <Color> m_rgraph_dfs_colors;
 
     // by rgraph dfs leave time
     std::vector <int> reordered_vertexes;
 };
-
 
 //--------------------------------------------------
 #endif
