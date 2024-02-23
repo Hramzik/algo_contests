@@ -18,27 +18,17 @@ class Position {
 };
 
 
-bool operator== (Position pair1, Position pair2);
+bool operator== (const Position& position1, const Position& position2);
 
 //--------------------------------------------------
 
 class LcsFinder {
 
-    friend void print_result (LcsFinder& solver);
-    friend void print_lcs1   (LcsFinder& solver, int prefix1, int prefix2);
-    friend void print_lcs2   (LcsFinder& solver, int prefix1, int prefix2);
-
-//--------------------------------------------------
-
   public:
 
     LcsFinder (std::string& string1, std::string& string2);
 
-    void pre_solve (void);
-    void solve (void);
-    void print_result (void);
-
-    void print_dp (void);
+    LcsFinderResult solve (void);
 
   private:
 
@@ -50,6 +40,7 @@ class LcsFinder {
     std::vector <Position> dp_last_indexes;
 
     int answer_ = -1;
+    LcsFinderResult result;
 
     //--------------------------------------------------
 
@@ -61,10 +52,26 @@ class LcsFinder {
 
     Position get_dp_last_indexes (int prefix1_len, int prefix2_len);
     void set_dp_last_indexes (int prefix1_len, int prefix2_len, Position value);
+
+    //--------------------------------------------------
+
+    void find_lcs1 (int prefix1, int prefix2);
+    void find_lcs2 (int prefix1, int prefix2);
 };
 
+//--------------------------------------------------
 
+class LcsFinderResult {
 
+  public:
+
+    LcsFinderResult (void);
+
+    //--------------------------------------------------
+
+    std::vector <int> m_first_sequence;
+    std::vector <int> m_second_sequence;
+}
 
 
 //--------------------------------------------------

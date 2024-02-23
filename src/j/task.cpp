@@ -2,9 +2,6 @@
 //--------------------------------------------------
 
 #include <iostream>
-#include <cassert>
-#include <limits.h>
-#include <iomanip>
 
 //--------------------------------------------------
 
@@ -16,38 +13,41 @@ int LcsFinder::bad_dp_value = -1;
 
 //--------------------------------------------------
 
-void print_result (LcsFinder& solver);
-void print_lcs1   (LcsFinder& solver, int prefix1, int prefix2);
-void print_lcs2   (LcsFinder& solver, int prefix1, int prefix2);
+static void print_vector (std::vector <int>& vector);
 
 //--------------------------------------------------
 
 int main (void) {
 
-    std::string string1; std::cin >> string1;
-    std::string string2; std::cin >> string2;
+    std::string string1;
+    std::string string2;
+
+    std::cin >> string1 >> string2;
+
+    //--------------------------------------------------
+
     LcsFinder solver (string1, string2);
 
     //--------------------------------------------------
 
-    solver.solve ();
+    auto result = solver.solve ();
 
     //--------------------------------------------------
 
-    print_result (solver);
+    print_vector (result.m_first_sequence);
+    std::cout << "\n";
+    print_vector (result.m_second_sequence);
 
     //--------------------------------------------------
 
     return 0;
 }
 
-
 //--------------------------------------------------
 
 Position::Position (int x, int y):
         x_ (x),
         y_ (y) {}
-
 
 LcsFinder::LcsFinder (std::string& string1, std::string& string2):
         string1_ (string1),
@@ -82,12 +82,15 @@ void LcsFinder::init (void) {
     }
 }
 
-
 void LcsFinder::solve (void) {
 
     answer_ = count_dp ((int) string1_.size (), (int) string2_.size ());
-}
 
+    //--------------------------------------------------
+
+    find_lcs1 (static_cast <int> (string1_.size ()), static_cast <int> (string2_.size ()));
+    find_lcs2 (static_cast <int> (string1_.size ()), static_cast <int> (string2_.size ()));
+}
 
 int LcsFinder::count_dp (int prefix1_len, int prefix2_len) {
 
@@ -129,7 +132,6 @@ int LcsFinder::count_dp (int prefix1_len, int prefix2_len) {
     return dp [index];
 }
 
-
 int LcsFinder::get_dp (int prefix1_len, int prefix2_len) {
 
     int index = prefix1_len * ((int) string2_.size () + 1) + prefix2_len;
@@ -137,7 +139,6 @@ int LcsFinder::get_dp (int prefix1_len, int prefix2_len) {
 
     return dp [index];
 }
-
 
 void LcsFinder::set_dp (int prefix1_len, int prefix2_len, int value) {
 
@@ -147,7 +148,6 @@ void LcsFinder::set_dp (int prefix1_len, int prefix2_len, int value) {
     dp [index] = value;
 }
 
-
 Position LcsFinder::get_dp_last_indexes (int prefix1_len, int prefix2_len) {
 
     int index = prefix1_len * ((int) string2_.size () + 1) + prefix2_len;
@@ -155,7 +155,6 @@ Position LcsFinder::get_dp_last_indexes (int prefix1_len, int prefix2_len) {
 
     return dp_last_indexes [index];
 }
-
 
 void LcsFinder::set_dp_last_indexes (int prefix1_len, int prefix2_len, Position value) {
 
@@ -165,83 +164,76 @@ void LcsFinder::set_dp_last_indexes (int prefix1_len, int prefix2_len, Position 
     dp_last_indexes [index] = value;
 }
 
-
-void print_result (LcsFinder& solver) {
-
-    std::cout << solver.answer_ << "\n";
-
-    print_lcs1 (solver, static_cast <int> (solver.string1_.size ()), static_cast <int> (solver.string2_.size ()));
-    std::cout << "\n";
-    print_lcs2 (solver, static_cast <int> (solver.string1_.size ()), static_cast <int> (solver.string2_.size ()));
-}
-
-
-void print_lcs1 (LcsFinder& solver, int prefix1, int prefix2) {
+void LcsFinder::find_lcs1 (int prefix1, int prefix2) {
 
     if (!prefix1 || !prefix2) return;
 
 
     if (solver.get_dp_last_indexes (prefix1, prefix2) == Position (prefix1 - 1, prefix2 - 1)) {
 
-        print_lcs1 (solver, prefix1 - 1, prefix2 - 1);
-        std::cout << prefix1 << " ";
+        find_lcs1 (prefix1 - 1, prefix2 - 1);
+        result.m_first_sequence.push_back (prefix1);
         return;
     }
 
     if (solver.get_dp_last_indexes (prefix1, prefix2) == Position (prefix1 - 1, prefix2)) {
 
-        print_lcs1 (solver, prefix1 - 1, prefix2);
+        find_lcs1 (prefix1 - 1, prefix2);
         return;
     }
 
 
-    print_lcs1 (solver, prefix1, prefix2 - 1);
+    find_lcs1 (prefix1, prefix2 - 1);
 }
 
-
-void print_lcs2 (LcsFinder& solver, int prefix1, int prefix2) {
+void LcsFinder::find_lcs2 (int prefix1, int prefix2) {
 
     if (!prefix1 || !prefix2) return;
 
 
     if (solver.get_dp_last_indexes (prefix1, prefix2) == Position (prefix1 - 1, prefix2 - 1)) {
 
-        print_lcs2 (solver, prefix1 - 1, prefix2 - 1);
-        std::cout << prefix2 << " ";
+        find_lcs2 (prefix1 - 1, prefix2 - 1);
+        result.m_second_sequence.push_back (prefix2);
         return;
     }
 
     if (solver.get_dp_last_indexes (prefix1, prefix2) == Position (prefix1 - 1, prefix2)) {
 
-        print_lcs2 (solver, prefix1 - 1, prefix2);
+        find_lcs2 (prefix1 - 1, prefix2);
         return;
     }
 
 
-    print_lcs2 (solver, prefix1, prefix2 - 1);
+    find_lcs2 (prefix1, prefix2 - 1);
 }
 
+//--------------------------------------------------
 
-void LcsFinder::print_dp (void) {
+LcsFinderResult::LcsFinderResult (void):
+        m_first_sequence (),
+        m_second_sequence () {}
 
-    for (int i = 0; i < (int) string1_.size () + 1; ++i) {
+//--------------------------------------------------
 
-        for (int j = 0; j < (int) string2_.size () + 1; ++j) {
+bool operator== (const Position& position1, const Position& position2) {
 
-            std::cout << std::setw (2) << get_dp (i, j) << " ";
-        }
-
-        std::cout << "\n";
-    }
-}
-
-
-bool operator== (Position pair1, Position pair2) {
-
-    if (pair1.x_ != pair2.x_) return false;
-    if (pair1.y_ != pair2.y_) return false;
+    if (position1.x_ != position2.x_) return false;
+    if (position1.y_ != position2.y_) return false;
 
 
     return true;
 }
+
+//--------------------------------------------------
+
+static void print_vector (std::vector <int>& vector) {
+
+    for (int i = 0; i < vector.size (); ++i) {
+
+        std::cout << vector [i] << " ";
+    }
+}
+
+//--------------------------------------------------
 
