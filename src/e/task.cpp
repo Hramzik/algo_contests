@@ -19,7 +19,7 @@ int main (void) {
     int vertex_count = 0;
     std::cin >> vertex_count;
 
-    Solution solution (vertex_count);
+    Graph graph (vertex_count);
 
     //--------------------------------------------------
 
@@ -32,15 +32,17 @@ int main (void) {
     for (int i = 0; i < edges_count; ++i) {
 
         std::cin >> vertex1 >> vertex2;
-        solution.add_edge (vertex1, vertex2);
+        graph.add_edge (vertex1, vertex2, i);
     }
 
     //--------------------------------------------------
 
-    solution.pre_solve ();
-    solution.solve ();
-    solution.print_result ();
+    Bridges_Finder solution (vertex_count);
 
+    std::vector <int> bridges = solution.solve ();
+    std::cout << bridges.size () << bridges;
+
+    //--------------------------------------------------
 
     return 0;
 }
@@ -48,49 +50,23 @@ int main (void) {
 
 //--------------------------------------------------
 
-Solution::Solution (int vertex_count):
+Bridges_Finder::Bridges_Finder (const Graph& graph):
 
         m_bridges (),
 
-        m_vertex_count (vertex_count),
-        m_edges_count  (0),
-        m_graph (),
+        m_graph (graph),
 
         dfs_timer (0),
-        m_enter_times            (vertex_count, -1),
-        m_least_deep_accesible (vertex_count, -1)
-{
-    for (int i = 0; i < m_vertex_count; ++i) {
-
-        m_graph.push_back  (Vertex_Info (i));
-    }
-}
+        m_enter_times          (graph.m_vertex_count, -1),
+        m_least_deep_accesible (graph.m_vertex_count, -1) {}
 
 //--------------------------------------------------
 
-void Solution::add_edge (int vertex1, int vertex2) {
+std::vector <int> Bridges_Finder::solve (void) {
 
-    m_graph [vertex1 - 1].m_neighbors.insert ({ &m_graph [vertex2 - 1], m_edges_count });
-    m_graph [vertex2 - 1].m_neighbors.insert ({ &m_graph [vertex1 - 1], m_edges_count });
+    for (int i = 0; i < m_graph.m_vertex_count; ++i) {
 
-    //--------------------------------------------------
-
-    ++m_edges_count;
-}
-
-
-void Solution::pre_solve (void) {
-
-    
-}
-
-
-void Solution::solve (void) {
-
-    for (int i = 0; i < m_vertex_count; ++i) {
-
-        Vertex_Info& vertex = m_graph [i];
-        if (vertex.m_color != WHITE) continue;
+        if (m_dfs_colors [i] != WHITE) continue;
 
         dfs (i, -1);
     }
@@ -98,54 +74,16 @@ void Solution::solve (void) {
     //--------------------------------------------------
 
     std::sort (m_bridges.begin (), m_bridges.end ());
-}
-
-
-void Solution::print_result (void) {
-
-    std::cout << m_bridges.size () << "\n";
 
     //--------------------------------------------------
 
-    for (int i : m_bridges) {
-
-        std::cout << i + 1 << " ";
-    }
-
-    std::cout << "\n";
-
-    //--------------------------------------------------
-
-    //std::cout << m_enter_times;
-    //std::cout << m_least_deep_accesible;
+    return m_bridges;
 }
 
 //--------------------------------------------------
 
-Neighbor_Info::Neighbor_Info (Vertex_Info* neighbor, int edge_index):
+void Bridges_Finder::dfs (int vertex_index, int edge_index) {
 
-        m_neighbor   (neighbor),
-        m_edge_index (edge_index) {}
-
-
-bool Neighbor_Info::operator< (const Neighbor_Info& other) const {
-
-    return m_neighbor < other.m_neighbor;
-}
-
-
-Vertex_Info::Vertex_Info (int number):
-
-        m_index (number),
-        m_color  (WHITE),
-
-        m_neighbors () {}
-
-//--------------------------------------------------
-
-void Solution::dfs (int vertex_index, int edge_index) {
-
-    Vertex_Info& vertex = m_graph [vertex_index];
     int& least_deep_accesible = m_least_deep_accesible [vertex_index];
     int& enter_time           = m_enter_times          [vertex_index];
 
@@ -159,38 +97,67 @@ void Solution::dfs (int vertex_index, int edge_index) {
 
     vertex.m_color = BLACK;
 
-    for (Neighbor_Info neighbor : vertex.m_neighbors) {
+    for (Neighbor neighbor : m_graph.m_neighbors [vertex_index]) {
 
-        Vertex_Info& next_vertex = *neighbor.m_neighbor;
-
-        //--------------------------------------------------
+        int next_vertex = neighbor.m_vertex;
 
         if (neighbor.m_edge_index == edge_index) continue;
 
-        if (next_vertex.m_color != WHITE) {
+        if (m_dfs_colors [next_vertex] != WHITE) {
 
-            least_deep_accesible = std::min
-                    (least_deep_accesible, m_enter_times [next_vertex.m_index]);
+            least_deep_accesible = std::min (least_deep_accesible, m_enter_times [next_vertex]);
             continue;
         }
 
         //--------------------------------------------------
 
-        dfs (next_vertex.m_index, neighbor.m_edge_index);
+        dfs (next_vertex, neighbor.m_edge_index);
 
-        least_deep_accesible = std::min
-                (least_deep_accesible, m_least_deep_accesible [next_vertex.m_index]);
+        least_deep_accesible = std::min (least_deep_accesible, m_least_deep_accesible [next_vertex]);
 
         //--------------------------------------------------
         // не могу вернуться из ребенка
 
-        if (m_least_deep_accesible [next_vertex.m_index] > enter_time) {
+        if (m_least_deep_accesible [next_vertex] > enter_time) {
 
             m_bridges.push_back (neighbor.m_edge_index);
         }
     }
 }
 
+//--------------------------------------------------
+// GRAPH CODE
+
+Edge::Edge (int vertex1, int vertex2, int edge_index):
+        m_vertex1 (vertex1),
+        m_vertex2 (vertex2),
+        m_edge_index  (edge_index) {}
+
+//--------------------------------------------------
+
+Neighbor::Neighbor (int vertex, int edge_index):
+        m_vertex     (vertex),
+        m_edge_index (edge_index) {}
+
+//--------------------------------------------------
+
+Graph::Graph (int vertex_count):
+
+        m_vertex_count (vertex_count),
+        m_edges (),
+        m_neighbors (vertex_count) {}
+
+void Graph::add_adge (Edge edge) {
+
+    m_edges.push_back (edge);
+
+    //--------------------------------------------------
+
+    m_neighbors [edge.m_vertex1].push_back (Neighbor (edge.m_vertex2, m_edges.size ()));
+}
+
+//--------------------------------------------------
+// VECTOR PRINT
 
 std::ostream& operator<< (std::ostream& ostream, std::vector <int> vector) {
 

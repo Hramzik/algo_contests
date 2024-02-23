@@ -8,67 +8,68 @@
 
 //--------------------------------------------------
 
-class Vertex_Info;
-
-//--------------------------------------------------
-
 enum Color {
 
     WHITE,
     BLACK,
 };
 
-
 //--------------------------------------------------
 
-
-class Neighbor_Info {
+class Edge {
 
   public:
 
-    Neighbor_Info (Vertex_Info* neighbor, int edge_index);
+    Edge (int vertex1, int vertex2, int edge_index);
 
     //--------------------------------------------------
 
-    bool operator< (const Neighbor_Info& other) const;
- 
-//--------------------------------------------------
-
-    Vertex_Info* m_neighbor;
-    int          m_edge_index;
+    int m_vertex1;
+    int m_vertex2;
+    int m_edge_index;
 };
 
-
-class Vertex_Info {
+class Neighbor {
 
   public:
 
-    Vertex_Info (int number);
-
-//--------------------------------------------------
-
-    int m_index;
-    Color m_color;
-    std::set <Neighbor_Info> m_neighbors;
-};
-
-
-//--------------------------------------------------
-
-
-class Solution {
-
-  public:
-
-    Solution (int vertex_count);
+    Neighbor (int vertex, int edge_index);
 
     //--------------------------------------------------
 
-    void add_edge (int vertex1, int vertex2);
+    int m_vertex;
+    int m_edge_index;
+};
 
-    void pre_solve (void);
+class Graph {
+
+  public:
+
+    Graph (int vertex_count);
+
+    //--------------------------------------------------
+
+    void  add_adge (Edge edge);
+    Graph get_rgraph (void);
+
+  //private:
+
+    int                                  m_vertex_count;
+    std::vector <Edge>                   m_edges;
+    std::vector <std::vector <Neighbor>> m_neighbors;
+};
+
+//--------------------------------------------------
+
+class Bridges_Finder {
+
+  public:
+
+    Bridges_Finder (const Graph& graph);
+
+    //--------------------------------------------------
+
     void solve (void);
-    void print_result (void);
 
 //--------------------------------------------------
 
@@ -80,9 +81,8 @@ class Solution {
 
     std::vector <int> m_bridges;
 
-    int m_vertex_count;
-    int m_edges_count;
-    std::vector <Vertex_Info> m_graph;
+    const Graph&        m_graph;
+    std::vector <Color> m_dfs_colors;
 
     int dfs_timer;
     std::vector <int> m_enter_times;
